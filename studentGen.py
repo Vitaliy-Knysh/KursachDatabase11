@@ -13,7 +13,7 @@ student_father_name = ["Иванович", "Олегович", "Васильев
                        "Александрович", "Антонович", "Игоревич", "Дмитриевич", "Владиславович", "Даниилович",
                        "Михайлович", "Арсеньевич"]
 student_list = []  # случайно сгенерированный список студентов
-diciplines = [
+diciplines = [  # не участвует в программе, но пусть останется как пояснение
     {'cipher': 2000,
      'name': 'Информационные системы в мехатронике и робототехнике',
      'hours': 200},
@@ -95,27 +95,33 @@ def generate(course, group_name, group_number):
         # для 1 курса шифр начинается с 2000, для 2 курса с 2100
         if course == 1:
             b = {'2000': {'date': '10.01.23',  # шифр предмета: данные о предмете
+                 'name': 'Информационные системы в мехатронике и робототехнике',
                  'mark': random.randint(2, 5)
                  }}
             student.update(b)
             b = {'2001': {'date': '12.01.23',
+                 'name': 'Агентно-ориентированные системы управления',
                  'mark': random.randint(2, 5)
                   }}
             student.update(b)
             b = {'2002': {'date': '14.01.23',
+                 'name': 'Методы и теория оптимизации',
                  'mark': random.randint(2, 5)
                   }}
             student.update(b)
         elif course == 2:
             b = {'2100': {'date': '10.01.23',
+                 'name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
                  'mark': random.randint(2, 5)
                   }}
             student.update(b)
             b = {'2101': {'date': '12.01.23',
+                 'name': 'Системы автоматизированного проектирования и производства',
                  'mark': random.randint(2, 5)
                   }}
             student.update(b)
             b = {'2102': {'date': '14.01.23',
+                 'name': 'Интеллектуальные технологии локальной навигации',
                  'mark': random.randint(2, 5)
                   }}
             student.update(b)
@@ -123,46 +129,46 @@ def generate(course, group_name, group_number):
 #################################################   ОЦЕНКИ ЗА ЗАЧЁТ   ##################################################
         # для 1 курса шифр начинается с 3000, для 2 курса с 3100
         if course == 1:  # 0 - зачет не сдан, 1 - сдан
-            b = {'date': '20.12.22',
-                 'subject cipher': 3000,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3000': {'date': '20.12.22',
+                          'name': 'Теория игр в управлении роботами',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '22.12.22',
-                 'subject cipher': 3001,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3001': {'date': '22.12.22',
+                          'name': 'Статистическая динамика автоматических систем',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '24.12.22',
-                 'subject cipher': 3002,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3002': {'date': '24.12.22',
+                          'name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '26.12.22',
-                 'subject cipher': 3003,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3003': {'date': '26.12.22',
+                          'name': 'Системный подход в научно-проектной деятельности',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
         elif course == 2:
-            b = {'date': '20.12.22',
-                 'subject cipher': 3100,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3100': {'date': '20.12.22',
+                          'name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '22.12.22',
-                 'subject cipher': 3101,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3101': {'date': '22.12.22',
+                          'name': 'Теория эксперимента в исследованиях систем',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '24.12.22',
-                 'subject cipher': 3102,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3102': {'date': '24.12.22',
+                          'name': 'Бизнес технологии цифрового производства',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
-            b = {'date': '26.12.22',
-                 'subject cipher': 3103,
-                 'mark': random.choice([0, 1, 1, 1, 1])
-                 }
+            b = {'3103': {'date': '26.12.22',
+                          'name': 'Управление проектами по созданию сложных технических систем',
+                          'mark': random.choice([0, 1, 1, 1, 1])
+                          }}
             student.update(b)
         cipher_counter += 1
         student_list.append(student)
@@ -173,5 +179,8 @@ generate(1, 'КРМО-02-22', 1)  # генерирует списки групп
 generate(group2_1, 2, 'КРМО-01-21')
 generate(group2_2, 2, 'КРМО-02-21')
 '''
+print(student_list[1])
+'''
 for i in student_list:
     print(i)
+'''
