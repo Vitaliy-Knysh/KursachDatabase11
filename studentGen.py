@@ -4,11 +4,11 @@
 # ---------------------------------------------------------------------------------------------------------------------
 import random
 from elasticsearch import Elasticsearch
-import studentGen
 
-ADDRESS = ["http://localhost:9200"]
+ADDRESS_LOCAL = ["http://localhost:9200"]
+ADDRESS_WORK = ["http://172.26.62.178:9200"]
 
-es = Elasticsearch(hosts=ADDRESS)
+es = Elasticsearch(hosts=ADDRESS_WORK)
 
 student_male_name = ["Иван", "Олег", "Василий", "Евгений", "Константин", "Виктор", "Александр", "Антон", "Игорь",
                      "Дмитрий", "Владислав", "Даниил", "Михаил", "Арсений"]
@@ -188,5 +188,5 @@ generate(2, 'КРМО-02-21', 2)
 es.indices.create(index="database")  # создание индекса
 
 for i in student_list:  # заполнение базы данных
-    res = es.index(index='students', body=i)
+    res = es.index(index="database", body=i)
     print(res)
