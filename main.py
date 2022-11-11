@@ -76,12 +76,15 @@ def remove_student(student_cipher):
             }
         }
     res = es.search(index="database", query=body, size=15, from_=0)
-
+    copy_counter = 1
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
         id = (doc['_id'])
         pprint(id)
-        with open('RESERVE-COPY-' + str(id) + '.json', 'w+') as f:
-            json.dump(doc, f, ensure_ascii=False)
+        with open(('RESERVE_COPY_' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
+                  + doc['_source']['father name'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
+            json.dump(doc['_source'], f, ensure_ascii=False)
+            print('hello')
+        copy_counter += 1
         #es.delete(index="students", id=i['_id'])
 
 
@@ -149,7 +152,7 @@ def add_subject():
 if __name__ == '__main__':
     #a = mark_query("КРМО-01-22", "2000", [3])
     #a = group_list_query("КРМО-01-22", True)
-    a = remove_student('1001')
+    remove_student('1001')
 
 
     #pprint(a)
