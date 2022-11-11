@@ -32,7 +32,7 @@ def generate(course, group_name, group_number):
         gender = random.randint(0, 1)  # выбор пола студента, 0 - мужской, 1 - женский
         if gender == 0:
             card = {'student cipher': cipher_counter,  # карточка с данными о студенте, экзамене и результатах экзамена
-                    'name': random.choice(student_male_name),
+                    'student name': random.choice(student_male_name),
                     'surname': random.choice(student_surname),
                     'father name': random.choice(student_father_name),
                     'course': course,
@@ -40,7 +40,7 @@ def generate(course, group_name, group_number):
                     }
         else:
             card = {'student cipher': cipher_counter,
-                    'name': random.choice(student_female_name),
+                    'student name': random.choice(student_female_name),
                     'surname': random.choice(student_surname) + 'а',
                     'father name': random.choice(student_father_name)[:-2] + 'на',
                     'course': course,
