@@ -71,34 +71,18 @@ def group_list_query(group_name, all_groups_flag=False):  # возвращает
 
 def remove_student(student_cipher):
     body = {
-        "from": 0,
-        "size": 6,
-        "query": {
             "bool": {
                 "must": {"match": {"student cipher": student_cipher}}
             }
         }
-    }
+    res = es.search(index="database", query=body, size=15, from_=0)
 
-    res_students = es.search(index="students", body=body)  # поиск данных студента во всех индексах
-    # res_students = es.search(index="students", query=body['query'], size=body['size'], from_=0)
-    res_exams = es.search(index="exams", body=body)
-    res_zachet = es.search(index="zachet", body=body)
-
-    reserve = open('reserve.txt', 'w')  # создание копии на всякий случай
-    reserve.write('STUDENT' + '\n' + str(res_students['hits']['hits'][0]['_source']) + '\n'
-                  + str(res_exams['hits']['hits'][0]['_source']) + '\n'
-                  + str(res_zachet['hits']['hits'][0]['_source']) + '\n\n')
-
-    id_students = res_students['hits']['hits'][0]['_id']  # выделение id в отдельном блоке для читаемости
-    id_exams = res_exams['hits']['hits'][0]['_id']
-    id_zachet = res_zachet['hits']['hits'][0]['_id']
-
-    reserve.close()
-    '''es.delete(index="students", id=id_students)  # удаление студента из всех индексов
-    es.delete(index="exams", id=id_exams)
-    es.delete(index="zachet", id=id_zachet)'''
-    # РАСКОММЕНТИРОВАТЬ КОГДА ПЕРЕПИШУ ПРИСВОЕНИЕ ШИФРА СТУДЕНТАМ
+    for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
+        id = (doc['_id'])
+        pprint(id)
+        with open('RESERVE-COPY-' + str(id) + '.json', 'w+') as f:
+            json.dump(doc, f, ensure_ascii=False)
+        #es.delete(index="students", id=i['_id'])
 
 
 def add_student(student_cipher, name, surname, father_name, course, group_name):
@@ -165,10 +149,11 @@ def add_subject():
 if __name__ == '__main__':
     #a = mark_query("КРМО-01-22", "2000", [3])
     #a = group_list_query("КРМО-01-22", True)
-    a = add_student('1099', 'Имя', 'Фамилия', 'Отчество', 1, 'КРМО-01-22')
+    a = remove_student('1001')
 
 
     #pprint(a)
+    #pprint(dict(a))
     #print(len(a))
     # remove_student(1002)
     '''res = group_list_query(3)
