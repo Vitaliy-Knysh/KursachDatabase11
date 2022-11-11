@@ -80,7 +80,7 @@ def remove_student(student_cipher):
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
         id = (doc['_id'])
         pprint(id)
-        with open(('RESERVE_COPY_' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
+        with open(('reserve/RESERVE_COPY_' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
                   + doc['_source']['father name'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
             print('hello')
