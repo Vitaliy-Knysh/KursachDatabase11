@@ -1,14 +1,15 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# ЭТОТ ФАЙЛ СОЗДАЕТ СПИСОК СТУДЕНТОВ: СПИСОК 4 ГРУПП, ОЦЕНКИ ЗА ЗАЧЁТ И ЭКЗАМЕН. ТАКЖЕ ЗДЕСЬ ХРАНИТСЯ СПИСОК ДИСЦИПИН
-# И ЗАПИСЫВАЕТ ИХ В БАЗУ ДАННЫХ. ИСПОЛНЯЕТСЯ ОДИН РАЗ, ЕСЛИ ИСПОЛНИТЬ БОЛЬШЕ 1 РАЗА, ВОЗМОЖНЫ ОШИБКИ И/ИЛИ ВСЁ СЛОМАЕТСЯ
+# ЭТОТ ФАЙЛ СОЗДАЕТ СПИСОК СТУДЕНТОВ: 2 КУРСА ПО 2 ГРУППЫ, ОЦЕНКИ ЗА ЗАЧЁТ И ЭКЗАМЕН И ЗАПИСЫВАЕТ ИХ В БАЗУ ДАННЫХ.
+# ИСПОЛНЯЕТСЯ ОДИН РАЗ
 # ---------------------------------------------------------------------------------------------------------------------
 import random
+from pprint import *
 from elasticsearch import Elasticsearch
 
-ADDRESS_LOCAL = ["http://localhost:9200"]
-ADDRESS_WORK = ["http://172.26.62.178:9200"]
+ADDRESS_LOCAL = ["http://localhost:9200"]  # адрес БД на локальной машине
+# ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
 
-es = Elasticsearch(hosts=ADDRESS_WORK)
+es = Elasticsearch(hosts=ADDRESS_LOCAL)
 
 student_male_name = ["Иван", "Олег", "Василий", "Евгений", "Константин", "Виктор", "Александр", "Антон", "Игорь",
                      "Дмитрий", "Владислав", "Даниил", "Михаил", "Арсений"]
@@ -19,174 +20,175 @@ student_surname = ["Иванов", "Петров", "Васильев", "Моро
 student_father_name = ["Иванович", "Олегович", "Васильевич", "Евгеньевич", "Константинович", "Викторович",
                        "Александрович", "Антонович", "Игоревич", "Дмитриевич", "Владиславович", "Даниилович",
                        "Михайлович", "Арсеньевич"]
-student_list = []  # случайно сгенерированный список студентов
-diciplines = [  # не участвует в программе, но пусть останется как пояснение
-    {'cipher': 2000,
-     'name': 'Информационные системы в мехатронике и робототехнике',
-     'hours': 200},
-    {'cipher': 2001,
-     'name': 'Агентно-ориентированные системы управления',
-     'hours': 200},
-    {'cipher': 2002,
-     'name': 'Методы и теория оптимизации',
-     'hours': 200},
-    {'cipher': 2003,
-     'name': 'Стандартизация в управлении качеством на предприятии',
-     'hours': 200},
-
-    {'cipher': 3000,
-     'name': 'Теория игр в управлении роботами',
-     'hours': 150},
-    {'cipher': 3001,
-     'name': 'Статистическая динамика автоматических систем',
-     'hours': 150},
-    {'cipher': 3002,
-     'name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
-     'hours': 150},
-    {'cipher': 3003,
-     'name': 'Системный подход в научно-проектной деятельности',
-     'hours': 150},
-
-    {'cipher': 2100,
-     'name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
-     'hours': 200},
-    {'cipher': 2101,
-     'name': 'Системы автоматизированного проектирования и производства',
-     'hours': 200},
-    {'cipher': 2102,
-     'name': 'Интеллектуальные технологии локальной навигации',
-     'hours': 200},
-
-    {'cipher': 3100,
-     'name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
-     'hours': 150},
-    {'cipher': 3101,
-     'name': 'Теория эксперимента в исследованиях систем',
-     'hours': 150},
-    {'cipher': 3102,
-     'name': 'Бизнес технологии цифрового производства',
-     'hours': 150},
-    {'cipher': 3103,
-     'name': 'Управление проектами по созданию сложных технических систем',
-     'hours': 150}
-]  # список дисциплин
 
 def generate(course, group_name, group_number):
     inc = (group_number * course) - 1
-    if group_number == 2 and course == 1: inc = 2  # небольшой костыль
+    if group_number == 1 and course == 2: inc = 2  # чтобы не усложнять формулу ниже
     cipher_counter = 1000 + (100 * inc)  # шифр студента, с запасом чтобы добавлять новых
     for i in range(20):  # в группе 20 студентов
 
-#############################################   ФОРМИРОВАНИЕ СПИСКА ГРУППЫ   ###########################################
+        #########################################   ФОРМИРОВАНИЕ СПИСКА ГРУППЫ   #######################################
 
         gender = random.randint(0, 1)  # выбор пола студента, 0 - мужской, 1 - женский
         if gender == 0:
-            a = {'student cipher': cipher_counter,
-                 'name': random.choice(student_male_name),
-                 'surname': random.choice(student_surname),
-                 'father name': random.choice(student_father_name),
-                 'course': course,
-                 'group': group_name
-                 }
+            card = {'student cipher': cipher_counter,  # карточка с данными о студенте, экзамене и результатах экзамена
+                    'name': random.choice(student_male_name),
+                    'surname': random.choice(student_surname),
+                    'father name': random.choice(student_father_name),
+                    'course': course,
+                    'group': group_name
+                    }
         else:
-            a = {'student cipher': cipher_counter,
-                 'name': random.choice(student_female_name),
-                 'surname': random.choice(student_surname) + 'а',
-                 'father name': random.choice(student_father_name)[:-2] + 'на',
-                 'course': course,
-                 'group': group_number
-                 }
-        student = a
+            card = {'student cipher': cipher_counter,
+                    'name': random.choice(student_female_name),
+                    'surname': random.choice(student_surname) + 'а',
+                    'father name': random.choice(student_father_name)[:-2] + 'на',
+                    'course': course,
+                    'group': group_name
+                    }
 
-################################################   ОЦЕНКИ ЗА ЭКЗАМЕН   #################################################
+        ############################################   ОЦЕНКИ ЗА ЭКЗАМЕН   #############################################
         # для 1 курса шифр начинается с 2000, для 2 курса с 2100
         if course == 1:
-            b = {'2000': {'date': '10.01.23',  # шифр предмета: данные о предмете
-                 'name': 'Информационные системы в мехатронике и робототехнике',
-                 'mark': random.randint(2, 5)
-                 }}
-            student.update(b)
-            b = {'2001': {'date': '12.01.23',
-                 'name': 'Агентно-ориентированные системы управления',
-                 'mark': random.randint(2, 5)
-                  }}
-            student.update(b)
-            b = {'2002': {'date': '14.01.23',
-                 'name': 'Методы и теория оптимизации',
-                 'mark': random.randint(2, 5)
-                  }}
-            student.update(b)
-        elif course == 2:
-            b = {'2100': {'date': '10.01.23',
-                 'name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
-                 'mark': random.randint(2, 5)
-                  }}
-            student.update(b)
-            b = {'2101': {'date': '12.01.23',
-                 'name': 'Системы автоматизированного проектирования и производства',
-                 'mark': random.randint(2, 5)
-                  }}
-            student.update(b)
-            b = {'2102': {'date': '14.01.23',
-                 'name': 'Интеллектуальные технологии локальной навигации',
-                 'mark': random.randint(2, 5)
-                  }}
-            student.update(b)
+            exam_info = {'date': '10.01.23',
+                         'hours': 200,
+                         'subject sipher': 2000,
+                         'subject name': 'Информационные системы в мехатронике и робототехнике',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)  # update лучше вообще не делать
+            es.index(index="database", body=card)  # для каждого нового экзамена/зачёта данные перезпаисываются,
+            # а данные студента остаются
 
-#################################################   ОЦЕНКИ ЗА ЗАЧЁТ   ##################################################
+            exam_info = {'date': '12.01.23',
+                         'hours': 200,
+                         'subject sipher': 2001,
+                         'name': 'Агентно-ориентированные системы управления',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)
+            es.index(index="database", body=card)
+
+            exam_info = {'date': '14.01.23',
+                         'hours': 200,
+                         'subject sipher': 2002,
+                         'name': 'Методы и теория оптимизации',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)
+            es.index(index="database", body=card)
+
+        elif course == 2:
+            exam_info = {'date': '10.01.23',
+                         'hours': 200,
+                         'subject sipher': 2100,
+                         'name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)
+            es.index(index="database", body=card)
+
+            exam_info = {'date': '12.01.23',
+                         'hours': 200,
+                         'subject sipher': 2101,
+                         'name': 'Системы автоматизированного проектирования и производства',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)
+            es.index(index="database", body=card)
+
+            exam_info = {'date': '14.01.23',
+                         'hours': 200,
+                         'subject sipher': 2102,
+                         'name': 'Интеллектуальные технологии локальной навигации',
+                         'mark': random.randint(2, 5)
+                         }
+            card.update(exam_info)
+            es.index(index="database", body=card)
+
+        #############################################   ОЦЕНКИ ЗА ЗАЧЁТ   ##############################################
         # для 1 курса шифр начинается с 3000, для 2 курса с 3100
         if course == 1:  # 0 - зачет не сдан, 1 - сдан
-            b = {'3000': {'date': '20.12.22',
-                          'name': 'Теория игр в управлении роботами',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3001': {'date': '22.12.22',
-                          'name': 'Статистическая динамика автоматических систем',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3002': {'date': '24.12.22',
-                          'name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3003': {'date': '26.12.22',
-                          'name': 'Системный подход в научно-проектной деятельности',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
+            zachet_info = {'date': '20.12.22',
+                           'hours': 150,
+                           'subject sipher': 3000,
+                           'name': 'Теория игр в управлении роботами',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '22.12.22',
+                           'hours': 150,
+                           'subject sipher': 3001,
+                           'name': 'Статистическая динамика автоматических систем',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '24.12.22',
+                           'hours': 150,
+                           'subject sipher': 3002,
+                           'name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '26.12.22',
+                           'hours': 150,
+                           'subject sipher': 3003,
+                           'name': 'Системный подход в научно-проектной деятельности',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
         elif course == 2:
-            b = {'3100': {'date': '20.12.22',
-                          'name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3101': {'date': '22.12.22',
-                          'name': 'Теория эксперимента в исследованиях систем',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3102': {'date': '24.12.22',
-                          'name': 'Бизнес технологии цифрового производства',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
-            b = {'3103': {'date': '26.12.22',
-                          'name': 'Управление проектами по созданию сложных технических систем',
-                          'mark': random.choice([0, 1, 1, 1, 1])
-                          }}
-            student.update(b)
+            zachet_info = {'date': '20.12.22',
+                           'hours': 150,
+                           'subject sipher': 3100,
+                           'name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '22.12.22',
+                           'hours': 150,
+                           'subject sipher': 3101,
+                           'name': 'Теория эксперимента в исследованиях систем',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '24.12.22',
+                           'hours': 150,
+                           'subject sipher': 3102,
+                           'name': 'Бизнес технологии цифрового производства',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
+            zachet_info = {'date': '26.12.22',
+                           'hours': 150,
+                           'subject sipher': 3103,
+                           'name': 'Управление проектами по созданию сложных технических систем',
+                           'mark': random.choice([0, 1, 1, 1, 1])
+                           }
+            card.update(zachet_info)
+            es.index(index="database", body=card)
+
         cipher_counter += 1
-        student_list.append(student)
+
+
+#es.index(index="database", body=card)
+es.indices.create(index="database")  # создание индекса
 
 generate(1, 'КРМО-01-22', 1)  # генерирует список групп, оценки за экзамен, зачёты
 generate(1, 'КРМО-02-22', 2)
 generate(2, 'КРМО-01-21', 1)
 generate(2, 'КРМО-02-21', 2)
-
-es.indices.create(index="database")  # создание индекса
-
-for i in student_list:  # заполнение базы данных
-    res = es.index(index="database", body=i)
-    print(res)

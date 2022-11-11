@@ -13,30 +13,25 @@
 from elasticsearch import Elasticsearch
 import json
 
-ADDRESS_LOCAL = ["http://localhost:9200"]
-ADDRESS_WORK = ["http://172.26.62.178:9200"]
+ADDRESS_LOCAL = ["http://localhost:9200"]  # адрес БД на локальной машине
+#ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
 
-es = Elasticsearch(hosts=ADDRESS_WORK)
+es = Elasticsearch(hosts=ADDRESS_LOCAL)
 
+# ВАЖНО!!! В БАЗЕ ТЕПЕРЬ НЕ НУЖНО ПРОПИСЫВАТЬ QUERY
 
-def mark_query(group_number, subject_sipher, marks_to_print):  # запрос на список студентов с конкретными оценками
-    # (оценкой)
-    gte = 1000 + ((group_number - 1) * 20)  # с этого числа начинается отсчёт студентов группы
-    lte = 999 + (group_number * 20)  # с этого числа заканчивается отсчёт студентов группы
-    body = {
-        "from": 0,
-        "size": 20,
-        "query": {
-            "bool": {
+def mark_query(group_name, subject_sipher, marks_to_print):  # запрос на список студентов одной группы
+                                                             # с конкретными оценками(оценкой)
+    body = {"bool": {
                 "must": [
-                    {"terms": {"mark": marks_to_print}},  # требуемые оценки, любой набор от 2 до 5
-                    {"match": {"subject cipher": subject_sipher}},  # шифр предмета
-                    {"range": {"student cipher": {"gte": gte, "lte": lte}}}  # шифр студентов конкретной группы
-                ]
-            }
-        }
+                    #{"terms": {"mark": marks_to_print}},  # требуемые оценки
+                    {"match": {"group": group_name}},  # номер группы
+                    #{"match": {'2000'}}  # шифр предмета
+                    ]
+                }
     }
-    return es.search(index="exams", query=body)
+    unfiltered_data = es.search(index="database", query=body, size=100, from_=0)
+    return unfiltered_data['hits']['hits']
 
 
 def zachet_query(group_number, subject_sipher, marks_to_print):
@@ -149,6 +144,9 @@ def add_subject():
 
 
 if __name__ == '__main__':
+    a = mark_query('КРМО-01-22', '2000', [2, 3, 4, 5])
+    import pprint
+    pprint.pprint(a)
     #remove_student(1002)
     '''res = group_list_query(3)
     for i in range(len(res["hits"]["hits"])):
