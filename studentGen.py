@@ -7,7 +7,7 @@ from pprint import *
 from elasticsearch import Elasticsearch
 
 ADDRESS_LOCAL = ["http://localhost:9200"]  # адрес БД на локальной машине
-# ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
+ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
 
 es = Elasticsearch(hosts=ADDRESS_LOCAL)
 
@@ -52,7 +52,7 @@ def generate(course, group_name, group_number):
         if course == 1:
             exam_info = {'date': '10.01.23',
                          'hours': 200,
-                         'subject sipher': 2000,
+                         'subject cipher': 2000,
                          'subject name': 'Информационные системы в мехатронике и робототехнике',
                          'mark': random.randint(2, 5)
                          }
@@ -62,8 +62,8 @@ def generate(course, group_name, group_number):
 
             exam_info = {'date': '12.01.23',
                          'hours': 200,
-                         'subject sipher': 2001,
-                         'name': 'Агентно-ориентированные системы управления',
+                         'subject cipher': 2001,
+                         'subject name': 'Агентно-ориентированные системы управления',
                          'mark': random.randint(2, 5)
                          }
             card.update(exam_info)
@@ -71,8 +71,8 @@ def generate(course, group_name, group_number):
 
             exam_info = {'date': '14.01.23',
                          'hours': 200,
-                         'subject sipher': 2002,
-                         'name': 'Методы и теория оптимизации',
+                         'subject cipher': 2002,
+                         'subject name': 'Методы и теория оптимизации',
                          'mark': random.randint(2, 5)
                          }
             card.update(exam_info)
@@ -81,8 +81,8 @@ def generate(course, group_name, group_number):
         elif course == 2:
             exam_info = {'date': '10.01.23',
                          'hours': 200,
-                         'subject sipher': 2100,
-                         'name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
+                         'subject cipher': 2100,
+                         'subject name': 'Автоматизация настройки систем управления интеллектуальных мобильных роботов',
                          'mark': random.randint(2, 5)
                          }
             card.update(exam_info)
@@ -90,8 +90,8 @@ def generate(course, group_name, group_number):
 
             exam_info = {'date': '12.01.23',
                          'hours': 200,
-                         'subject sipher': 2101,
-                         'name': 'Системы автоматизированного проектирования и производства',
+                         'subject cipher': 2101,
+                         'subject name': 'Системы автоматизированного проектирования и производства',
                          'mark': random.randint(2, 5)
                          }
             card.update(exam_info)
@@ -99,8 +99,8 @@ def generate(course, group_name, group_number):
 
             exam_info = {'date': '14.01.23',
                          'hours': 200,
-                         'subject sipher': 2102,
-                         'name': 'Интеллектуальные технологии локальной навигации',
+                         'subject cipher': 2102,
+                         'subject name': 'Интеллектуальные технологии локальной навигации',
                          'mark': random.randint(2, 5)
                          }
             card.update(exam_info)
@@ -111,8 +111,8 @@ def generate(course, group_name, group_number):
         if course == 1:  # 0 - зачет не сдан, 1 - сдан
             zachet_info = {'date': '20.12.22',
                            'hours': 150,
-                           'subject sipher': 3000,
-                           'name': 'Теория игр в управлении роботами',
+                           'subject cipher': 3000,
+                           'subject name': 'Теория игр в управлении роботами',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -120,8 +120,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '22.12.22',
                            'hours': 150,
-                           'subject sipher': 3001,
-                           'name': 'Статистическая динамика автоматических систем',
+                           'subject cipher': 3001,
+                           'subject name': 'Статистическая динамика автоматических систем',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -129,8 +129,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '24.12.22',
                            'hours': 150,
-                           'subject sipher': 3002,
-                           'name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
+                           'subject cipher': 3002,
+                           'subject name': 'Коммуникативные технологии в профессиональной сфере на иностранном языке',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -138,8 +138,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '26.12.22',
                            'hours': 150,
-                           'subject sipher': 3003,
-                           'name': 'Системный подход в научно-проектной деятельности',
+                           'subject cipher': 3003,
+                           'subject name': 'Системный подход в научно-проектной деятельности',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -148,8 +148,8 @@ def generate(course, group_name, group_number):
         elif course == 2:
             zachet_info = {'date': '20.12.22',
                            'hours': 150,
-                           'subject sipher': 3100,
-                           'name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
+                           'subject cipher': 3100,
+                           'subject name': 'Технологии обработки информации в интеллектуальных мобильных роботах',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -157,8 +157,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '22.12.22',
                            'hours': 150,
-                           'subject sipher': 3101,
-                           'name': 'Теория эксперимента в исследованиях систем',
+                           'subject cipher': 3101,
+                           'subject name': 'Теория эксперимента в исследованиях систем',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -166,8 +166,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '24.12.22',
                            'hours': 150,
-                           'subject sipher': 3102,
-                           'name': 'Бизнес технологии цифрового производства',
+                           'subject cipher': 3102,
+                           'subject name': 'Бизнес технологии цифрового производства',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)
@@ -175,8 +175,8 @@ def generate(course, group_name, group_number):
 
             zachet_info = {'date': '26.12.22',
                            'hours': 150,
-                           'subject sipher': 3103,
-                           'name': 'Управление проектами по созданию сложных технических систем',
+                           'subject cipher': 3103,
+                           'subject name': 'Управление проектами по созданию сложных технических систем',
                            'mark': random.choice([0, 1, 1, 1, 1])
                            }
             card.update(zachet_info)

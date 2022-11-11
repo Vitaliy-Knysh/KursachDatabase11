@@ -3,34 +3,36 @@
 # -вывести все оценки по предмету, оценки группы -------------------------------------------------------------- ГОТОВО
 # -вывести то же самое для зачётов ---------------------------------------------------------------------------- ГОТОВО
 # -вывести список группы -------------------------------------------------------------------------------------- ГОТОВО
-# -вывести список потока
+# -вывести список потока -------------------------------------------------------------------------------------- ГОТОВО
 # -добавить студента в базу, исключить студента из базы
 # -добавить предмет в базу, исключить предмет из базы
 # -изменить оценку студента
 # ДОПОЛНИТЕЛЬНО: сделать единый шаблон запроса для зачётов, экзаменов и списка группы,
-# ДОПОЛНТИЕЛЬНО: оценки конкретных студетов по шифру
+# ДОПОЛНИТЕЛЬНО: оценки конкретных студетов по шифру
 # а в функции менять только нужные поля
 # --------------------------------------------------------------------------------------------------------------------
 
 from elasticsearch import Elasticsearch
+from pprint import *
+
 import json
 
 ADDRESS_LOCAL = ["http://localhost:9200"]  # адрес БД на локальной машине
-# ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
+ADDRESS_REMOTE = ["http://172.26.62.178:9200"]  # адрес БД на сторонней машине
 
 es = Elasticsearch(hosts=ADDRESS_LOCAL)
 
 # ВАЖНО!!! В БАЗЕ ТЕПЕРЬ НЕ НУЖНО ПРОПИСЫВАТЬ QUERYконкретные оценки по предмету, все оценки по предмету,
 
 
-def mark_query(group_name, subject_sipher, marks_to_print, all_groups_flag=False):  # запрос на экзамены или зачёты
+def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False):  # запрос на экзамены или зачёты
     # с конкретными оценками(оценкой)
     fields = ['student name', 'surname', 'father name', 'group', 'subject name', 'date']
     body = {"bool": {
         "must": [
             {"terms": {"mark": marks_to_print}},  # требуемые оценки
             {"match": {"group.keyword": group_name}},  # номер группы, keyword здесь задаёт жёсткий поиск
-            {"match": {"subject sipher": subject_sipher}}  # шифр предмета
+            {"match": {"subject cipher": subject_cipher}}  # шифр предмета
         ]
     }
     }
@@ -51,12 +53,13 @@ def group_list_query(group_name, all_groups_flag=False):  # возвращает
             {"match": {"group.keyword": group_name}}]
         }
     }
-    if all_groups_flag:  # если нужно вывести все группы, удаляем поле "группа"
+    if all_groups_flag:  # если нужно вывести весть поток
         body['bool']['must'].pop(0)
         f1 = {"match": {"group": group_name[:4]}}  # если нудно вывести весь поток, в запрос добавляется название
         f2 = {"match": {"group": group_name[-2:]}}  # направления и год начала обучения
         body['bool']['must'].append(f1)
         body['bool']['must'].append(f2)
+
     res = es.search(index="database", query=body, size=1000, from_=0, source=fields)['hits']['hits']
     ret = []
     for i in res:
@@ -76,6 +79,7 @@ def remove_student(student_cipher):
             }
         }
     }
+
     res_students = es.search(index="students", body=body)  # поиск данных студента во всех индексах
     # res_students = es.search(index="students", query=body['query'], size=body['size'], from_=0)
     res_exams = es.search(index="exams", body=body)
@@ -97,15 +101,33 @@ def remove_student(student_cipher):
     # РАСКОММЕНТИРОВАТЬ КОГДА ПЕРЕПИШУ ПРИСВОЕНИЕ ШИФРА СТУДЕНТАМ
 
 
-def add_student(student_cipher, name, surname, father_name, course, group):
-    body = {'student cipher': student_cipher,
-            'name': name,
-            'surname': surname,
-            'father name': father_name,
-            'course': course,
-            'group': group
-            }
-    es.index(index='students', body=body)
+def add_student(student_cipher, name, surname, father_name, course, group_name):
+    fields = ['subject name', 'date', 'hours', 'subject cipher', 'student cipher']
+    body = {"bool": {
+        "must": {"match": {"group.keyword": group_name}},
+    }
+    }
+    res = es.search(index="database", query=body, size=15, from_=0, source=fields)['hits']['hits']
+    diciplines = []
+    for i in res:  # из получнных документов нужно получить список дисциплин без повторений.
+        if i['_source']['student cipher'] == res[0]['_source']['student cipher']:  # больше 15 их точно не будет
+            diciplines.append(i['_source'])
+
+    for dicipline in diciplines:  # создание списка не сданных дисциплин для нового студента
+        body = {'student cipher': student_cipher,
+                'name': name,
+                'surname': surname,
+                'father name': father_name,
+                'course': course,
+                'group': group_name,
+                'date': dicipline['date'],
+                'hours': dicipline['hours'],
+                'subject cipher': dicipline['subject cipher'],
+                'subject name': dicipline['subject name'],
+                'mark': 'Не сдано'
+                }
+        #es.index(index='students', body=body) РАСКОММЕНТИРОВАТЬ КОГДА БУДЕТ ГОТОВО УДАЛЕНИЕ СТУДЕНТА
+        pprint(body)
 
 
 def remove_subject(subject_cipher, exam_flag):  # если флаг равен 1, это экзамен. Если 0, это зачёт
@@ -142,11 +164,12 @@ def add_subject():
 
 if __name__ == '__main__':
     #a = mark_query("КРМО-01-22", "2000", [3])
-    a = group_list_query("КРМО-01-22", True)
-    from pprint import *
+    #a = group_list_query("КРМО-01-22", True)
+    a = add_student('1099', 'Имя', 'Фамилия', 'Отчество', 1, 'КРМО-01-22')
 
-    pprint(a)
-    print(len(a))
+
+    #pprint(a)
+    #print(len(a))
     # remove_student(1002)
     '''res = group_list_query(3)
     for i in range(len(res["hits"]["hits"])):
