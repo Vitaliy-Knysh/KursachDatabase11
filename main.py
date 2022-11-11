@@ -4,7 +4,7 @@
 # -вывести то же самое для зачётов ---------------------------------------------------------------------------- ГОТОВО
 # -вывести список группы -------------------------------------------------------------------------------------- ГОТОВО
 # -вывести список потока -------------------------------------------------------------------------------------- ГОТОВО
-# -добавить студента в базу, исключить студента из базы
+# -добавить студента в базу, исключить студента из базы ------------------------------------------------------- ГОТОВО
 # -добавить предмет в базу, исключить предмет из базы
 # -изменить оценку студента
 # ДОПОЛНИТЕЛЬНО: сделать единый шаблон запроса для зачётов, экзаменов и списка группы,
@@ -14,6 +14,7 @@
 
 from elasticsearch import Elasticsearch
 from pprint import *
+import os
 
 import json
 
@@ -76,14 +77,12 @@ def remove_student(student_cipher):
             }
         }
     res = es.search(index="database", query=body, size=15, from_=0)
-    copy_counter = 1
+    copy_counter = 0
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
         id = (doc['_id'])
-        pprint(id)
-        with open(('reserve/RESERVE_COPY_' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
-                  + doc['_source']['father name'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
+        with open(('reserve_students/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
+                  + doc['_source']['group'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
-            print('hello')
         copy_counter += 1
         #es.delete(index="students", id=i['_id'])
 
@@ -117,32 +116,23 @@ def add_student(student_cipher, name, surname, father_name, course, group_name):
         pprint(body)
 
 
-def remove_subject(subject_cipher, exam_flag):  # если флаг равен 1, это экзамен. Если 0, это зачёт
+def remove_subject(subject_cipher):
     body = {
-        "from": 0,
-        "size": 6,
-        "query": {
-            "bool": {
-                "must": {"match": {"subject cipher": subject_cipher}}
-            }
+        "bool": {
+            "must": {"match": {"subject cipher": subject_cipher}}
         }
     }
-
-    reserve = open('reserve.txt', 'w')  # создание копии на всякий случай
-    if exam_flag == 1:
-        res_exams = es.search(index="exams", body=body)
-        reserve.write('-' * 10 + 'EXAM' + '-' * 10 + '\n' + str(res_exams['hits']['hits'][0]['_source']) + '\n\n')
-        id_exams = res_exams['hits']['hits'][0]['_id']
-        # es.delete(index="exams", id=id_exams)
-        # РАСКОММЕНТИРОВАТЬ КОГДА ПЕРЕПИШУ ПРИСВОЕНИЕ ШИФРА СТУДЕНТАМ
-
-    else:
-        res_zachet = es.search(index="zachet", body=body)
-        reserve.write('-' * 10 + 'ZACHET' + '-' * 10 + '\n' + str(res_zachet['hits']['hits'][0]['_source']) + '\n\n')
-        id_zachet = res_zachet['hits']['hits'][0]['_id']
-        # es.delete(index="zachet", id=id_zachet)
-        # РАСКОММЕНТИРОВАТЬ КОГДА ПЕРЕПИШУ ПРИСВОЕНИЕ ШИФРА СТУДЕНТАМ
-    reserve.close()
+    res = es.search(index="database", query=body, size=1000, from_=0)
+    copy_counter = 0
+    dir_name = str('reserve_subjects/' + res['hits']['hits'][0]['_source']['subject name'])
+    os.mkdir(dir_name)
+    for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
+        id = (doc['_id'])
+        with open((dir_name + '/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_' +
+                   doc['_source']['group'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
+            json.dump(doc['_source'], f, ensure_ascii=False)
+        copy_counter += 1
+        # es.delete(index="database", id=id)
 
 
 def add_subject():
@@ -152,7 +142,8 @@ def add_subject():
 if __name__ == '__main__':
     #a = mark_query("КРМО-01-22", "2000", [3])
     #a = group_list_query("КРМО-01-22", True)
-    remove_student('1001')
+    #remove_student('1001')
+    remove_subject(2000)
 
 
     #pprint(a)
