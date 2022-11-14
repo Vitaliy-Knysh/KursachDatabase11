@@ -184,8 +184,6 @@ def generate(course, group_name, group_number):
 
         cipher_counter += 1
 
-
-#es.index(index="database", body=card)
 es.indices.create(index="database")  # создание индекса
 
 generate(1, 'КРМО-01-22', 1)  # генерирует список групп, оценки за экзамен, зачёты

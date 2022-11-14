@@ -5,11 +5,8 @@
 # -вывести список группы -------------------------------------------------------------------------------------- ГОТОВО
 # -вывести список потока -------------------------------------------------------------------------------------- ГОТОВО
 # -добавить студента в базу, исключить студента из базы ------------------------------------------------------- ГОТОВО
-# -добавить предмет в базу, исключить предмет из базы
-# -изменить оценку студента
-# ДОПОЛНИТЕЛЬНО: сделать единый шаблон запроса для зачётов, экзаменов и списка группы,
-# ДОПОЛНИТЕЛЬНО: оценки конкретных студетов по шифру
-# а в функции менять только нужные поля
+# -добавить предмет в базу, исключить предмет из базы --------------------------------------------------------- ГОТОВО
+# -изменить оценку студента ----------------------------------------------------------------------------------- ГОТОВО
 # --------------------------------------------------------------------------------------------------------------------
 
 from elasticsearch import Elasticsearch
@@ -25,8 +22,8 @@ es = Elasticsearch(hosts=ADDRESS_LOCAL)
 
 # ВАЖНО!!! В БАЗЕ ТЕПЕРЬ НЕ НУЖНО ПРОПИСЫВАТЬ QUERYконкретные оценки по предмету, все оценки по предмету,
 
-
-def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False):  # запрос на экзамены или зачёты
+def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False):
+    """запрос на экзамены или зачёты"""
     # с конкретными оценками(оценкой)
     fields = ['student name', 'surname', 'father name', 'group', 'subject name', 'date']
     body = {"bool": {
@@ -47,8 +44,10 @@ def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False
     return ret
 
 
-def group_list_query(group_name, all_groups_flag=False):  # возвращает список группы или потока
-    fields = ['student name', 'surname', 'father name', 'group', 'student cipher']
+def group_list_query(group_name, all_groups_flag=False):
+    """возвращает список группы или потока"""
+
+    fields = ['student name', 'surname', 'father name', 'group', 'student cipher', 'course']
     body = {"bool": {
         "must": [
             {"match": {"group.keyword": group_name}}]
@@ -71,6 +70,8 @@ def group_list_query(group_name, all_groups_flag=False):  # возвращает
 
 
 def remove_student(student_cipher):
+    """удаляет студента из базы данных, создает резервную копию"""
+
     body = {
             "bool": {
                 "must": {"match": {"student cipher": student_cipher}}
@@ -79,15 +80,17 @@ def remove_student(student_cipher):
     res = es.search(index="database", query=body, size=15, from_=0)
     copy_counter = 0
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
-        id = (doc['_id'])
         with open(('reserve_students/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
                   + doc['_source']['group'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
         copy_counter += 1
-        #es.delete(index="students", id=i['_id'])
+        #es.delete(index="students", id=doc['_id'])
+        pprint(dict(res))
 
 
 def add_student(student_cipher, name, surname, father_name, course, group_name):
+    """добавляет студента в базу данных"""
+
     fields = ['subject name', 'date', 'hours', 'subject cipher', 'student cipher']
     body = {"bool": {
         "must": {"match": {"group.keyword": group_name}},
@@ -114,36 +117,87 @@ def add_student(student_cipher, name, surname, father_name, course, group_name):
                 }
         #es.index(index='students', body=body) РАСКОММЕНТИРОВАТЬ КОГДА БУДЕТ ГОТОВО УДАЛЕНИЕ СТУДЕНТА
         pprint(body)
+        #es.update
 
 
 def remove_subject(subject_cipher):
+    """удаляет предмет из базы данных, создаёт резервную копию"""
+
     body = {
         "bool": {
             "must": {"match": {"subject cipher": subject_cipher}}
         }
     }
     res = es.search(index="database", query=body, size=1000, from_=0)
-    copy_counter = 0
     dir_name = str('reserve_subjects/' + res['hits']['hits'][0]['_source']['subject name'])
     os.mkdir(dir_name)
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
-        id = (doc['_id'])
         with open((dir_name + '/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_' +
-                   doc['_source']['group'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
+                   doc['_source']['group'] + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
-        copy_counter += 1
-        # es.delete(index="database", id=id)
+        # es.delete(index="database", id=doc['_id'])
 
 
-def add_subject():
-    pass
+def add_subject(subject_name, subject_cipher, date, hours, base_group):
+    """добавляет предмет в базу данных"""
+
+    students = group_list_query(base_group, True)
+    for student in students:  # создание списка не сданных дисциплин для нового студента
+        body = {'student cipher': student['student cipher'],
+                'name': student['student name'],
+                'surname': student['surname'],
+                'father name': student['father name'],
+                'course': student['course'],
+                'group': student['group'],
+                'date': date,
+                'hours': hours,
+                'subject cipher': subject_cipher,
+                'subject name': subject_name,
+                'mark': 'Не сдано'
+                }
+        # es.index(index='students', body=body)
+        pprint(body)
+
+
+def change_student_mark(student_cipher, subject_cipher, mark):
+    """изменяет оценку студента"""
+
+    body = {
+        "bool": {
+            "must": [{"match": {"student cipher": student_cipher}},
+                     {"match": {"subject cipher": subject_cipher}}]
+        }
+    }
+    res = es.search(index="database", query=body, size=1, from_=0, source=['_id'])['hits']['hits']
+    body = {'doc': {'mark': mark}}
+    es.update(index='database', id=res[0]['_id'], body=body)
+
 
 
 if __name__ == '__main__':
-    #a = mark_query("КРМО-01-22", "2000", [3])
+    #a = mark_query("КРМО-01-22", 2000, [3])
+    #add_subject('ебология', 2999, '15.15.15', 133, 'КРМО-02-21')
     #a = group_list_query("КРМО-01-22", True)
     #remove_student('1001')
-    remove_subject(2000)
+    #remove_subject(2000)
+    '''body = {
+        "bool": {
+            "must": [{"match": {"student cipher": 1011}},
+                     {"match": {"subject cipher": 2000}}]
+        }
+    }
+    res = es.search(index="database", query=body, size=15, from_=0)
+    pprint(dict(res))
+
+    body2 = {
+        'doc': {'mark': 3}
+    }
+    es.update(index='database', id=res['hits']['hits'][0]['_id'], body=body2)
+
+    res = es.search(index="database", query=body, size=15, from_=0)
+    pprint(dict(res))'''
+
+    change_student_mark(1000, 2000, 3)
 
 
     #pprint(a)
