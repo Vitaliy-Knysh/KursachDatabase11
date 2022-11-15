@@ -23,8 +23,8 @@ es = Elasticsearch(hosts=ADDRESS_LOCAL)
 # ВАЖНО!!! В БАЗЕ ТЕПЕРЬ НЕ НУЖНО ПРОПИСЫВАТЬ QUERYконкретные оценки по предмету, все оценки по предмету,
 
 def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False):
-    """запрос на экзамены или зачёты"""
-    # с конкретными оценками(оценкой)
+    """запрос на экзамены или зачёты с конкретными оценками(оценкой)"""
+
     fields = ['student name', 'surname', 'father name', 'group', 'subject name', 'date']
     body = {"bool": {
         "must": [
@@ -79,9 +79,11 @@ def remove_student(student_cipher):
         }
     res = es.search(index="database", query=body, size=15, from_=0)
     copy_counter = 0
+    dir_name = str('reserve_students/' + res['hits']['hits'][0]['_source']['surname'] + '_' +
+                   res['hits']['hits'][0]['_source']['student name'] + '_' + res['hits']['hits'][0]['_source']['group'])
+    os.mkdir(dir_name)
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
-        with open(('reserve_students/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_'
-                  + doc['_source']['group'] + '_' + str(copy_counter) + '.json'), 'w+') as f:
+        with open((dir_name + '/' + str(copy_counter) + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
         copy_counter += 1
         #es.delete(index="students", id=doc['_id'])
@@ -173,13 +175,38 @@ def change_student_mark(student_cipher, subject_cipher, mark):
     es.update(index='database', id=res[0]['_id'], body=body)
 
 
+def restore_student(student_name, student_surname, group):
+    """восстановление студента из резервной копии"""
+
+    dir_name = 'reserve_students/' + student_name + '_' + student_surname + '_' + group
+    files = os.listdir(dir_name)
+    for file in files:
+        with open(dir_name + '/' + file) as f:
+            card = json.load(f)
+            #es.index(index="database", body=card)
+
+
+def restore_subject(subject_name):
+    """восстановление предмета из резервной копии"""
+
+    dir_name = 'reserve_subjects/' + subject_name
+    files = os.listdir(dir_name)
+    for file in files:
+        with open(dir_name + '/' + file) as f:
+            card = json.load(f)
+            # es.index(index="database", body=card)
+            pprint(card)
+
 
 if __name__ == '__main__':
     #a = mark_query("КРМО-01-22", 2000, [3])
     #add_subject('ебология', 2999, '15.15.15', 133, 'КРМО-02-21')
     #a = group_list_query("КРМО-01-22", True)
-    #remove_student('1001')
+    #remove_student('1002')
     #remove_subject(2000)
+    restore_subject('Информационные системы в мехатронике и робототехнике')
+    '''pprint(os.listdir('reserve_students'))
+    pprint(os.listdir('reserve_students/Корнев_Константин_КРМО-01-22'))'''
     '''body = {
         "bool": {
             "must": [{"match": {"student cipher": 1011}},
@@ -197,8 +224,8 @@ if __name__ == '__main__':
     res = es.search(index="database", query=body, size=15, from_=0)
     pprint(dict(res))'''
 
-    change_student_mark(1000, 2000, 3)
-
+    #change_student_mark(1000, 2000, 3)
+    #restore_student('Корнев', 'Константин', 'КРМО-01-22')
 
     #pprint(a)
     #pprint(dict(a))
