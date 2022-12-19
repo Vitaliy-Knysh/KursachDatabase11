@@ -405,6 +405,7 @@ class Ui_Form(object):
             queries.add_student(self.input_student_cipher.toPlainText(), self.input_student_name.toPlainText(),
                                 self.input_surname.toPlainText(), self.input_father_name.toPlainText(),
                                 self.input_course.toPlainText(), self.input_group.toPlainText())
+            self.update_boxes()
 
     def callback_btn_remove_student(self):
         if self.input_student_cipher.toPlainText() != '':
@@ -412,6 +413,8 @@ class Ui_Form(object):
             for root, dirs in os.walk("reserve_students"):
                 for dirname in dirs:
                     self.box_students_to_restore.addItem(dirname)
+            self.update_boxes()
+
 
     def callback_btn_add_subject(self):
         if (self.input_subject_name.toPlainText() != '' and self.input_groups.toPlainText() != '' and
@@ -420,10 +423,12 @@ class Ui_Form(object):
             queries.add_subject(self.input_subject_name.toPlainText(), self.input_student_cipher.toPlainText(),
                                 self.input_date.toPlainText(), self.input_hours.toPlainText(),
                                 self.input_groups.toPlainText())
+            self.update_boxes()
 
     def callback_btn_remove_subject(self):
         if self.input_student_cipher_2.toPlainText() != '':
             queries.remove_subject(self.box_subject_cipher_2.currentTex())
+            self.update_boxes()
 
 
     def callback_btn_change_mark(self):
@@ -437,13 +442,16 @@ class Ui_Form(object):
 
             queries.change_student_mark(self.input_student_cipher_2.toPlainText(),
                                         self.box_subject_cipher_3.currentText(), mark)
+            self.update_boxes()
 
     def callback_btn_restore_student(self):
         raw = self.box_students_to_restore.currentText().split()
         queries.restore_student(raw[1], raw[0], raw[2])
+        self.update_boxes()
 
     def callback_btn_restore_subject(self):
         queries.restore_subject(self.box_students_to_restore.currentText())
+        self.update_boxes()
 
 
     def update_boxes(self):
