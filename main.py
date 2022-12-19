@@ -348,6 +348,12 @@ class Ui_Form(object):
 
         self.btn_query_marks.clicked.connect(self.respond_btn_query_marks)
         self.btn_query_students.clicked.connect(self.respond_btn_query_students)
+        self.btn_add_student.clicked.connect(self.respond_btn_add_student)
+        self.btn_remove_student.clicked.connect(self.respond_btn_remove_student)
+        self.btn_add_subject.clicked.connect(self.respond_btn_add_subject)
+        self.btn_remove_subject.clicked.connect(self.respond_btn_remove_subject)
+        self.btn_change_mark.clicked.connect(self.respond_btn_change_mark)
+
 
     def respond_btn_query_marks(self):
         self.list_marks.clear()
@@ -359,7 +365,8 @@ class Ui_Form(object):
             elif doc['mark'] == 0:
                 doc['mark'] = 'не зачтено'
             self.list_marks.addItem(str(doc['surname']) + ' ' + str(doc['student name'][:1] + '.' +
-                                    str(doc['father name'][:1])) + '.' + ' - ' + str(doc['mark']))
+                                    str(doc['father name'][:1])) + '.' + ' - ' + str(doc['mark']) + ' ' +
+                                    str(doc['date']))
 
     def respond_btn_query_students(self):
         self.list_students.clear()
@@ -367,6 +374,45 @@ class Ui_Form(object):
         for doc in raw:
             self.list_students.addItem(str(doc['surname']) + ' ' + str(doc['student name'] + ' ' +
                                        str(doc['father name'])) + ' ' + ' - ' + str(doc['student cipher']))
+
+    def respond_btn_add_student(self):
+        if (self.input_student_cipher.toPlainText() != '' and self.input_student_name.toPlainText() != '' and
+                self.input_surname.toPlainText() != '' and self.input_father_name.toPlainText() != '' and
+                self.input_course.toPlainText() != '' and self.input_group.toPlainText() != ''):
+
+            queries.add_student(self.input_student_cipher.toPlainText(), self.input_student_name.toPlainText(),
+                                self.input_surname.toPlainText(), self.input_father_name.toPlainText(),
+                                self.input_course.toPlainText(), self.input_group.toPlainText())
+
+    def respond_btn_remove_student(self):
+        if self.self.input_student_cipher.toPlainText() != '':
+            queries.remove_student(self.input_student_cipher.toPlainText())
+
+    def respond_btn_add_subject(self):
+        if (self.input_subject_name.toPlainText() != '' and self.input_groups.toPlainText() != 0 and
+                self.input_student_cipher.toPlainText() != 0):
+
+            queries.add_subject(self.input_subject_name.toPlainText(), self.input_groups.toPlainText(),
+            self.input_student_cipher.toPlainText())
+
+        #!!!!!!!!!!!!!!!!!!!!!!!! ДОБАВИТЬ ДАТУ И КОЛИЧЕСТВО ЧАСОВ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    def respond_btn_remove_subject(self):
+        if self.input_student_cipher_2.toPlainText() != '':
+            queries.remove_subject(self.input_student_cipher_2.toPlainText())
+
+    def respond_btn_change_mark(self):
+        if self.input_student_cipher_2.toPlainText() != '' and self.input_subject_cipher_3.toPlainText() != '':
+            mark = 0
+            if self.box_choose_mark.currentText() == 'зачёт':
+                mark = 1
+            elif (self.box_choose_mark.currentText() == '2' or self.box_choose_mark.currentText() == '3' or
+                    self.box_choose_mark.currentText() == '4' or self.box_choose_mark.currentText() == '5'):
+                mark = int(self.box_choose_mark.currentText())
+
+            queries.change_student_mark(self.input_student_cipher_2.toPlainText(),
+                                        self.input_subject_cipher_3.toPlainText(), mark)
+
 
 
     def update_boxes(self):
