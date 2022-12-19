@@ -347,19 +347,35 @@ class Ui_Form(object):
         self.tabs.setTabText(self.tabs.indexOf(self.tab_restore_subject), _translate("Form", "Восстановить предмет"))
 
         self.btn_query_marks.clicked.connect(self.respond_btn_query_marks)
-
+        self.btn_query_students.clicked.connect(self.respond_btn_query_students)
 
     def respond_btn_query_marks(self):
+        self.list_marks.clear()
         raw = queries.mark_query(self.box_group_name.currentText(), self.box_subject_cipher.currentText(),
                                  [5, 4, 3, 2, 1, 0])
         for doc in raw:
+            if doc['mark'] == 1:
+                doc['mark'] = 'зачтено'
+            elif doc['mark'] == 0:
+                doc['mark'] = 'не зачтено'
             self.list_marks.addItem(str(doc['surname']) + ' ' + str(doc['student name'][:1] + '.' +
-                                    str(doc['father name'][:1])) + '.'+ ' - ' + str(doc['mark']))
+                                    str(doc['father name'][:1])) + '.' + ' - ' + str(doc['mark']))
 
+    def respond_btn_query_students(self):
+        self.list_students.clear()
+        raw = queries.group_list_query(self.box_group_name.currentText(), all_groups_flag=self.btn_show_all.isChecked())
+        for doc in raw:
+            self.list_students.addItem(str(doc['surname']) + ' ' + str(doc['student name'] + ' ' +
+                                       str(doc['father name'])) + ' ' + ' - ' + str(doc['student cipher']))
 
 
     def update_boxes(self):
         """здесь добавляются все данные для заполнения combo_box и списка предметов и шифров предметов"""
+
+        self.list_subjects.clear()
+        self.box_subject_cipher.clear()
+        self.box_group_name.clear()
+        self.box_group_name_2.clear()
 
         subject_list, group_name_list = queries.get_display_data()
         self.list_subjects.addItems(subject_list)
