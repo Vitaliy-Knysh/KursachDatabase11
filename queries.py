@@ -86,7 +86,7 @@ def remove_student(student_cipher):
         with open((dir_name + '/' + str(copy_counter) + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
         copy_counter += 1
-        es.delete(index="students", id=doc['_id'])
+        es.delete(index="database", id=doc['_id'])
         pprint(dict(res))
 
 
@@ -117,9 +117,8 @@ def add_student(student_cipher, name, surname, father_name, course, group_name):
                 'subject name': dicipline['subject name'],
                 'mark': 'Не сдано'
                 }
-        es.index(index='students', body=body)
+        es.index(index="database", body=body)
         pprint(body)
-        es.update
 
 
 def remove_subject(subject_cipher):
@@ -137,7 +136,7 @@ def remove_subject(subject_cipher):
         with open((dir_name + '/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_' +
                    doc['_source']['group'] + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
-        es.delete(index="database", id=doc['_id'])
+        # es.delete(index="database", id=doc['_id'])
 
 
 def add_subject(subject_name, subject_cipher, date, hours, base_group):
@@ -157,7 +156,7 @@ def add_subject(subject_name, subject_cipher, date, hours, base_group):
                 'subject name': subject_name,
                 'mark': 'Не сдано'
                 }
-        es.index(index='students', body=body)
+        es.index(index="database", body=body)
         pprint(body)
 
 
@@ -220,3 +219,10 @@ def get_display_data():
 
 # a, b = get_display_data()
 # pprint(b)
+# for root, dirs, files in os.walk("reserve_subjects"):
+#     for filename in root:
+#         print(filename)
+# remove_student(1000)
+# remove_student(1001)
+# remove_student(1002)
+
