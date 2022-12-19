@@ -24,7 +24,7 @@ es = Elasticsearch(hosts=ADDRESS_LOCAL)
 def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False):
     """запрос на экзамены или зачёты с конкретными оценками(оценкой)"""
 
-    fields = ['student name', 'surname', 'father name', 'group', 'subject name', 'date']
+    fields = ['student name', 'surname', 'father name', 'group', 'subject name', 'date', 'mark']
     body = {"bool": {
         "must": [
             {"terms": {"mark": marks_to_print}},  # требуемые оценки
@@ -33,10 +33,11 @@ def mark_query(group_name, subject_cipher, marks_to_print, all_groups_flag=False
         ]
     }
     }
+    sort = {'mark': 'desc'}
     if all_groups_flag:  # если нужно вывести все группы, удаляем поле "группа"
         body['bool']['must'].pop(1)
 
-    res = es.search(index="database", query=body, size=100, from_=0, source=fields)['hits']['hits']
+    res = es.search(index="database", query=body, size=100, from_=0, sort=sort, source=fields)['hits']['hits']
     ret = []
     for i in res:
         ret.append(i['_source'])
