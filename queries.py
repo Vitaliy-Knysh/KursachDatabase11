@@ -12,6 +12,7 @@
 from elasticsearch import Elasticsearch
 from pprint import *
 import os
+import shutil
 
 import json
 
@@ -106,7 +107,7 @@ def add_student(student_cipher, name, surname, father_name, course, group_name):
 
     for dicipline in diciplines:  # создание списка не сданных дисциплин для нового студента
         body = {'student cipher': student_cipher,
-                'name': name,
+                'student name': name,
                 'surname': surname,
                 'father name': father_name,
                 'course': course,
@@ -115,7 +116,7 @@ def add_student(student_cipher, name, surname, father_name, course, group_name):
                 'hours': dicipline['hours'],
                 'subject cipher': dicipline['subject cipher'],
                 'subject name': dicipline['subject name'],
-                'mark': 'Не сдано'
+                'mark': 0
                 }
         es.index(index="database", body=body)
         pprint(body)
@@ -126,26 +127,27 @@ def remove_subject(subject_cipher):
 
     body = {
         "bool": {
-            "must": {"match": {"subject cipher": subject_cipher}}
+            "must": {"match": {'subject cipher': subject_cipher}}
         }
     }
     res = es.search(index="database", query=body, size=1000, from_=0)
+    pprint(res)
     dir_name = str('reserve_subjects/' + res['hits']['hits'][0]['_source']['subject name'])
     os.mkdir(dir_name)
     for doc in res['hits']['hits']:  # создание резервной копии документа в json формате
         with open((dir_name + '/' + doc['_source']['surname'] + '_' + doc['_source']['student name'] + '_' +
                    doc['_source']['group'] + '.json'), 'w+') as f:
             json.dump(doc['_source'], f, ensure_ascii=False)
-        # es.delete(index="database", id=doc['_id'])
+        es.delete(index="database", id=doc['_id'])
 
 
 def add_subject(subject_name, subject_cipher, date, hours, base_group):
     """добавляет предмет в базу данных"""
 
     students = group_list_query(base_group, True)
-    for student in students:  # создание списка не сданных дисциплин для нового студента
+    for student in students:
         body = {'student cipher': student['student cipher'],
-                'name': student['student name'],
+                'student name': student['student name'],
                 'surname': student['surname'],
                 'father name': student['father name'],
                 'course': student['course'],
@@ -154,7 +156,7 @@ def add_subject(subject_name, subject_cipher, date, hours, base_group):
                 'hours': hours,
                 'subject cipher': subject_cipher,
                 'subject name': subject_name,
-                'mark': 'Не сдано'
+                'mark': 0
                 }
         es.index(index="database", body=body)
         pprint(body)
@@ -184,6 +186,7 @@ def restore_student(student_name, student_surname, group):
             card = json.load(f)
             es.index(index="database", body=card)
             pprint(card)
+    shutil.rmtree(dir_name)
 
 
 def restore_subject(subject_name):
@@ -196,6 +199,7 @@ def restore_subject(subject_name):
             card = json.load(f)
             es.index(index="database", body=card)
             pprint(card)
+    shutil.rmtree(dir_name)
 
 def get_display_data():
     """возвращает названия и щифры всех предметов, все группы студентов"""
@@ -217,11 +221,14 @@ def get_display_data():
             group_name_list.append(doc['_source']['group'])
     return subject_list, group_name_list
 
+# add_student('1099', 'вв', 'вв', 'вв', '1', 'КРМО-01-22')
+# pprint(group_list_query('КРМО-01-22'))
 # a, b = get_display_data()
 # pprint(b)
 # for root, dirs, files in os.walk("reserve_subjects"):
 #     for filename in root:
 #         print(filename)
+# remove_subject(4099)
 # remove_student(1000)
 # remove_student(1001)
 # remove_student(1002)
